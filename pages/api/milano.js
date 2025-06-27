@@ -1,53 +1,28 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
   try {
     const { lng, lat } = req.query;
-    
     if (!lng || !lat) {
       return res.status(400).json({ error: 'Missing lng or lat' });
     }
 
-    // Prova API Milano più semplice prima
-    const simpleUrl = `https://geoportale.comune.milano.it/arcgis/rest/services/PGT/AreeERS/MapServer?f=json`;
-    
-    console.log('Testing Milano connection...');
-    const response = await fetch(simpleUrl, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; PGT-Proxy/1.0)',
-        'Accept': 'application/json'
-      }
-    });
+    const milanoUrl = `https://geoportale.comune.milano.it/arcgis/rest/services/PGT/PGT_Milano2030_VIGENTE_R02/MapServer/identify?geometry=${lng},${lat}&geometryType=esriGeometryPoint&sr=4326&tolerance=5&mapExtent=9.0,45.3,9.4,45.6&imageDisplay=400,400,96&f=json`;
 
-    console.log('Response status:', response.status);
+    // Usa proxy publico europeo
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(milanoUrl)}`;
     
-    if (!response.ok) {
-      return res.status(500).json({
-        error: `Milano server responded with ${response.status}`,
-        statusText: response.statusText
-      });
+    const response = await fetch(proxyUrl);
+    const result = await response.json();
+    
+    if (result.contents) {
+      const data = JSON.parse(result.contents);
+      return res.status(200).json(data);
+    } else {
+      throw new Error('Proxy failed');
     }
-
-    const data = await response.json();
-    
-    return res.status(200).json({
-      message: 'Milano API reachable!',
-      status: response.status,
-      dataKeys: Object.keys(data),
-      receivedParams: { lng, lat }
-    });
     
   } catch (error) {
-    console.error('Milano connection error:', error);
-    return res.status(500).json({ 
-      error: error.message,
-      type: error.constructor.name
-    });
+    return res.status(500).json({ error: error.message });
   }
 }

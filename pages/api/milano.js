@@ -2,27 +2,53 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   
   try {
-    const { lng, lat } = req.query;
-    if (!lng || !lat) {
-      return res.status(400).json({ error: 'Missing lng or lat' });
-    }
-
-    const milanoUrl = `https://geoportale.comune.milano.it/arcgis/rest/services/PGT/PGT_Milano2030_VIGENTE_R02/MapServer/identify?geometry=${lng},${lat}&geometryType=esriGeometryPoint&sr=4326&tolerance=5&mapExtent=9.0,45.3,9.4,45.6&imageDisplay=400,400,96&f=json`;
-
-    // Usa proxy publico europeo
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(milanoUrl)}`;
+    const { test } = req.query;
     
-    const response = await fetch(proxyUrl);
-    const result = await response.json();
+    // Test diversi servizi pubblici italiani
+    const tests = {
+      // Test 1: Altro comune lombardo
+      bergamo: 'https://sit.comune.bergamo.it/arcgis/rest/services',
+      
+      // Test 2: Servizio regionale
+      lombardia: 'https://www.cartografia.regione.lombardia.it/arcgis/rest/services',
+      
+      // Test 3: Servizio nazionale
+      igm: 'https://www.igmi.org/arcgis/rest/services',
+      
+      // Test 4: ISTAT
+      istat: 'https://geomap.istat.it/arcgis/rest/services',
+      
+      // Test 5: Milano servizio diverso (non PGT)
+      milano_basic: 'https://geoportale.comune.milano.it/arcgis/rest/services'
+    };
     
-    if (result.contents) {
-      const data = JSON.parse(result.contents);
-      return res.status(200).json(data);
-    } else {
-      throw new Error('Proxy failed');
+    if (!test || !tests[test]) {
+      return res.status(400).json({ 
+        error: 'Specify test parameter',
+        available: Object.keys(tests)
+      });
     }
+    
+    const url = tests[test];
+    console.log(`Testing: ${url}`);
+    
+    const response = await fetch(`${url}?f=json`);
+    const data = await response.json();
+    
+    return res.status(200).json({
+      test: test,
+      url: url,
+      status: response.status,
+      success: true,
+      dataKeys: Object.keys(data),
+      sample: data
+    });
     
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ 
+      test: req.query.test,
+      error: error.message,
+      success: false
+    });
   }
 }

@@ -5,19 +5,24 @@ export default async function handler(req, res) {
     const { test, lng, lat } = req.query;
     
     const tests = {
-      // Test MapBox Milano
-      mapbox_milano: lng && lat ? 
-        `https://api.mapbox.com/v4/mattiamonti.ajx7te5s/tilequery/${lng},${lat}.json?access_token=pk.eyJ1IjoibWF0dGlhbW9udGkiLCJhIjoiY21jZWh5MWh4MHNjczJqcXc5ZzgzNXl5diJ9.ibmn4ltoxdysemj1_X5l5A` : null,
-      
-      // Test coordinate Via Brera
-      test_brera: `https://api.mapbox.com/v4/mattiamonti.ajx7te5s/tilequery/9.1905,45.4668.json?access_token=pk.eyJ1IjoibWF0dGlhbW9udGkiLCJhIjoiY21jZWh5MWh4MHNjczJqcXc5ZzgzNXl5diJ9.ibmn4ltoxdysemj1_X5l5A`,
-      
-      // Test altra zona Milano
-      test_duomo: `https://api.mapbox.com/v4/mattiamonti.ajx7te5s/tilequery/9.1859,45.4654.json?access_token=pk.eyJ1IjoibWF0dGlhbW9udGkiLCJhIjoiY21jZWh5MWh4MHNjczJqcXc5ZzgzNXl5diJ9.ibmn4ltoxdysemj1_X5l5A`,
-      
-      // Test periferia Milano  
-      test_periferia: `https://api.mapbox.com/v4/mattiamonti.ajx7te5s/tilequery/9.2704,45.5311.json?access_token=pk.eyJ1IjoibWF0dGlhbW9udGkiLCJhIjoiY21jZWh5MWh4MHNjczJqcXc5ZzgzNXl5diJ9.ibmn4ltoxdysemj1_X5l5A`
-    };
+  // Test zone primarie (centro)
+  test_primarie_brera: `https://api.mapbox.com/v4/mattiamonti.dcky6dnf/tilequery/9.1905,45.4668.json?access_token=${TOKEN}`,
+  test_primarie_duomo: `https://api.mapbox.com/v4/mattiamonti.dcky6dnf/tilequery/9.1859,45.4654.json?access_token=${TOKEN}`,
+  
+  // Test zone speciali (funzionante!)
+  test_speciali_gratosoglio: `https://api.mapbox.com/v4/mattiamonti.avbsjrwq/tilequery/9.158,45.4089.json?access_token=${TOKEN}`,
+  
+  // Test altre coordinate speciali
+  test_speciali_figino: `https://api.mapbox.com/v4/mattiamonti.avbsjrwq/tilequery/9.1089,45.4653.json?access_token=${TOKEN}`,
+  
+  // Test servizi/vincoli/punti
+  test_servizi_centro: `https://api.mapbox.com/v4/mattiamonti.bd2co0vn/tilequery/9.1905,45.4668.json?access_token=${TOKEN}`,
+  test_vincoli_centro: `https://api.mapbox.com/v4/mattiamonti.aq5uemb4/tilequery/9.1905,45.4668.json?access_token=${TOKEN}`,
+  test_punti_centro: `https://api.mapbox.com/v4/mattiamonti.00l8mca0/tilequery/9.1905,45.4668.json?access_token=${TOKEN}`,
+  
+  // Test coordinata custom  
+  test_custom: lng && lat ? `https://api.mapbox.com/v4/mattiamonti.dcky6dnf/tilequery/${lng},${lat}.json?access_token=${TOKEN}` : null
+};
     
     if (!test || !tests[test]) {
       return res.status(400).json({ 
